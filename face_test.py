@@ -5,7 +5,7 @@ cam.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+    "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
 )
 
 if not cam.isOpened():
