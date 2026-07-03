@@ -5,8 +5,7 @@ from head_pose_detector import HeadPoseDetector
 
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
 face_detector = FaceDetector()
-head_detector = HeadPoseDetector(frame_height=480, down_threshold=0.10, hold_time=0.8)
-
+head_detector = HeadPoseDetector(frame_height=480, down_threshold=0.05, hold_time=0.3)
 camera.open()
 
 while True:
