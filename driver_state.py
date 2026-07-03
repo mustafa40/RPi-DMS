@@ -34,13 +34,13 @@ class DriverStateAnalyzer:
         else:
             y_shift = 0
 
-        # Kısa süreli göz kaybı: göstergeye bakma / göz kırpma olabilir
-        if eyes_missing_time < 1.0:
+        # Çok kısa göz kaybı: kırpma / anlık hata
+        if eyes_missing_time < 0.4:
             return self.UNKNOWN
 
-        # Yüz aşağı kaymışsa ve göz görünmüyorsa: dashboard/gösterge bakışı kabul et
-        if y_shift > 0.03:
+        # Kısa süreli aşağı bakış: gösterge paneli
+        if y_shift > 0.06 and eyes_missing_time < 1.5:
             return self.DASHBOARD
 
-        # Yüz aynı yerde ama gözler görünmüyorsa: gerçek göz kapanması ihtimali
+        # 1.5 saniyeden uzun göz görünmüyorsa artık uyku riski kabul et
         return self.EYES_CLOSED
