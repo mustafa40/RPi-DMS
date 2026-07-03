@@ -9,12 +9,12 @@ from dashboard import Dashboard
 from blink_tracker import BlinkTracker
 
 
-camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
+camera = CameraManager(camera_index=0, width=320, height=240, fps=20, flip=True)
 face_detector = FaceDetector(memory_time=1.2)
 eye_detector = EyeDetector()
 engine = FatigueEngine(alarm_time=1.7)
 alarm = AlarmBuzzer(gpio_pin=18)
-dashboard = Dashboard(width=640, height=480)
+dashboard = Dashboard(width=320, height=240)
 blink_tracker = BlinkTracker()
 
 camera.open()
@@ -59,7 +59,8 @@ try:
             blink_count=blink_count
         )
 
-        cv2.imshow("RPi-DMS Professional", frame)
+        display = cv2.resize(frame, (800, 480))
+        cv2.imshow("RPi-DMS Professional", display)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
