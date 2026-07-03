@@ -50,6 +50,9 @@ while True:
     #    status = "HEAD DOWN ALERT"
     #   alert_level = "ALARM"
 
+    if head_down:
+    head_status = "HEAD DOWN"
+
     if alert_level == "ALARM":
         alarm.on()
     else:
