@@ -9,7 +9,7 @@ from dashboard import Dashboard
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
 face_detector = FaceDetector()
 eye_detector = EyeDetector()
-engine = FatigueEngine(alarm_time=2.0)
+engine = FatigueEngine(alarm_time=1.2)
 alarm = AlarmBuzzer(gpio_pin=18)
 dashboard = Dashboard(width=640, height=480)
 
