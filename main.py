@@ -6,6 +6,7 @@ from eye_detector import EyeDetector
 from fatigue_engine import FatigueEngine
 from alarm_buzzer import AlarmBuzzer
 from dashboard import Dashboard
+from blink_tracker import BlinkTracker
 
 
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
@@ -14,6 +15,7 @@ eye_detector = EyeDetector()
 engine = FatigueEngine(alarm_time=1.7)
 alarm = AlarmBuzzer(gpio_pin=18)
 dashboard = Dashboard(width=640, height=480)
+blink_tracker = BlinkTracker()
 
 camera.open()
 
@@ -40,6 +42,7 @@ try:
             for (ex, ey, ew, eh) in eyes:
                 cv2.rectangle(frame, (ex, ey), (ex + ew, ey + eh), (255, 0, 0), 2)
 
+        blink_count = blink_tracker.update(eyes_open)
         status, alert_level = engine.update(face_detected, eyes_open)
 
         if alert_level == "ALARM":
