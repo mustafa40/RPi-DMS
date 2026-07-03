@@ -13,7 +13,7 @@ from perclos_tracker import PerclosTracker
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
 face_detector = FaceDetector(memory_time=1.2)
 eye_detector = EyeDetector()
-engine = FatigueEngine(alarm_time=1.7, level2_time=3.7, level3_time=99.0)
+engine = FatigueEngine(alarm_time=1.5, level2_time=3.5, level3_time=99.0)
 alarm = AlarmBuzzer(gpio_pin=18)
 dashboard = Dashboard(width=640, height=480)
 blink_tracker = BlinkTracker()
