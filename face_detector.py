@@ -3,7 +3,7 @@ import time
 
 
 class FaceDetector:
-    def __init__(self, memory_time=1.7):
+    def __init__(self, memory_time=1.2):
         self.front_cascade = cv2.CascadeClassifier(
             "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
         )
