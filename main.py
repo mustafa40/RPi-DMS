@@ -50,12 +50,13 @@ try:
         else:
             alarm.off()
 
-        frame = dashboard.draw(
-            frame=frame,
-            status=status,
-            alert_level=alert_level,
-            fps=camera.get_fps()
-        )
+frame = dashboard.draw(
+    frame=frame,
+    status=status,
+    alert_level=alert_level,
+    fps=camera.get_fps(),
+    blink_count=blink_count
+)
 
         cv2.imshow("RPi-DMS Professional", frame)
 
