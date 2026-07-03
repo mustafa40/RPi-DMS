@@ -1,4 +1,5 @@
 import cv2
+import config
 
 from camera_manager import CameraManager
 from face_detector import FaceDetector
@@ -12,15 +13,40 @@ from perclos_tracker import PerclosTracker
 from fatigue_score import FatigueScore
 
 
-camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
+camera = CameraManager(
+    camera_index=0,
+    width=config.CAMERA_WIDTH,
+    height=config.CAMERA_HEIGHT,
+    fps=config.CAMERA_FPS,
+    flip=config.CAMERA_FLIP
+)
+
 face_detector = FaceDetector(memory_time=1.2)
 eye_detector = EyeDetector()
-driver_state_analyzer = DriverStateAnalyzer(frame_height=480)
-engine = FatigueEngine(alarm_time=0.8, level2_time=2.5, level3_time=99.0)
-alarm = AlarmBuzzer(gpio_pin=18)
-dashboard = Dashboard(width=640, height=480)
+
+driver_state_analyzer = DriverStateAnalyzer(
+    frame_height=config.DRIVER_STATE_FRAME_HEIGHT
+)
+
+engine = FatigueEngine(
+    alarm_time=config.ALARM_TIME,
+    level2_time=config.ALARM_LEVEL2_TIME,
+    level3_time=config.ALARM_LEVEL3_TIME
+)
+
+alarm = AlarmBuzzer(gpio_pin=config.BUZZER_GPIO)
+
+dashboard = Dashboard(
+    width=config.CAMERA_WIDTH,
+    height=config.CAMERA_HEIGHT
+)
+
 blink_tracker = BlinkTracker()
-perclos_tracker = PerclosTracker(window_seconds=20)
+
+perclos_tracker = PerclosTracker(
+    window_seconds=config.PERCLOS_WINDOW_SECONDS
+)
+
 fatigue_score_engine = FatigueScore()
 
 camera.open()
@@ -54,12 +80,14 @@ try:
 
         if face_detected:
             x, y, w, h = face
+
             face_color = (0, 255, 0) if real_face else (0, 165, 255)
             cv2.rectangle(frame, (x, y), (x + w, y + h), face_color, 2)
 
             if detect_this_frame:
                 eyes = eye_detector.detect(frame, face)
                 eyes_open = eye_detector.is_open(eyes)
+
                 last_eyes = eyes
                 last_eyes_open = eyes_open
 
@@ -84,8 +112,15 @@ try:
 
         alarm.update(alert_level)
 
-        cv2.putText(frame, f"STATE: {driver_state}", (20, 105),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
+        cv2.putText(
+            frame,
+            f"STATE: {driver_state}",
+            (20, 105),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.65,
+            (255, 255, 255),
+            2
+        )
 
         frame = dashboard.draw(
             frame=frame,
