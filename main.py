@@ -1,7 +1,7 @@
 import cv2
 
 from camera_manager import CameraManager
-from yunet_face_detector import YuNetFaceDetector
+from face_detector import FaceDetector
 from eye_detector import EyeDetector
 from head_pose_detector import HeadPoseDetector
 from fatigue_engine import FatigueEngine
@@ -10,7 +10,7 @@ from dashboard import Dashboard
 
 
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
-face_detector = YuNetFaceDetector()
+face_detector = FaceDetector(memory_time=1.2)
 eye_detector = EyeDetector()
 head_detector = HeadPoseDetector(frame_height=480, down_threshold=0.05, hold_time=0.3)
 engine = FatigueEngine(alarm_time=1.2)
