@@ -3,6 +3,7 @@ import cv2
 from camera_manager import CameraManager
 from face_detector import FaceDetector
 from eye_detector import EyeDetector
+from driver_state import DriverStateAnalyzer
 from fatigue_engine import FatigueEngine
 from alarm_buzzer import AlarmBuzzer
 from dashboard import Dashboard
@@ -13,6 +14,7 @@ from perclos_tracker import PerclosTracker
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
 face_detector = FaceDetector(memory_time=1.2)
 eye_detector = EyeDetector()
+driver_state_analyzer = DriverStateAnalyzer(frame_height=480)
 engine = FatigueEngine(alarm_time=1.5, level2_time=3.5, level3_time=99.0)
 alarm = AlarmBuzzer(gpio_pin=18)
 dashboard = Dashboard(width=640, height=480)
@@ -50,31 +52,37 @@ try:
 
         if face_detected:
             x, y, w, h = face
-
             face_color = (0, 255, 0) if real_face else (0, 165, 255)
             cv2.rectangle(frame, (x, y), (x + w, y + h), face_color, 2)
 
             if detect_this_frame:
                 eyes = eye_detector.detect(frame, face)
                 eyes_open = eye_detector.is_open(eyes)
-
                 last_eyes = eyes
                 last_eyes_open = eyes_open
 
             for (ex, ey, ew, eh) in eyes:
                 cv2.rectangle(frame, (ex, ey), (ex + ew, ey + eh), (255, 0, 0), 2)
-
         else:
             last_eyes = []
             last_eyes_open = False
             eyes_open = False
 
+        driver_state = driver_state_analyzer.update(
+            face_detected=face_detected,
+            face=face,
+            eyes_open=eyes_open
+        )
+
         blink_count = blink_tracker.update(eyes_open)
         perclos = perclos_tracker.update(eyes_open)
 
-        status, alert_level = engine.update(face_detected, eyes_open)
+        status, alert_level = engine.update(driver_state)
 
         alarm.update(alert_level)
+
+        cv2.putText(frame, f"STATE: {driver_state}", (20, 105),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
 
         frame = dashboard.draw(
             frame=frame,
