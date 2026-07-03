@@ -1,7 +1,7 @@
 import cv2
 
 from camera_manager import CameraManager
-from face_detector import FaceDetector
+from yunet_face_detector import YuNetFaceDetector
 from eye_detector import EyeDetector
 from head_pose_detector import HeadPoseDetector
 from fatigue_engine import FatigueEngine
