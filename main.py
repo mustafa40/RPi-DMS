@@ -43,6 +43,7 @@ try:
                 cv2.rectangle(frame, (ex, ey), (ex + ew, ey + eh), (255, 0, 0), 2)
 
         blink_count = blink_tracker.update(eyes_open)
+
         status, alert_level = engine.update(face_detected, eyes_open)
 
         if alert_level == "ALARM":
@@ -50,13 +51,13 @@ try:
         else:
             alarm.off()
 
-frame = dashboard.draw(
-    frame=frame,
-    status=status,
-    alert_level=alert_level,
-    fps=camera.get_fps(),
-    blink_count=blink_count
-)
+        frame = dashboard.draw(
+            frame=frame,
+            status=status,
+            alert_level=alert_level,
+            fps=camera.get_fps(),
+            blink_count=blink_count
+        )
 
         cv2.imshow("RPi-DMS Professional", frame)
 
