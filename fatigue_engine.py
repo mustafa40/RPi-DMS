@@ -2,7 +2,7 @@ import time
 
 
 class FatigueEngine:
-    def __init__(self, alarm_time=1.7, level2_time=3.0, level3_time=5.0, open_grace_time=0.35):
+    def __init__(self, alarm_time=1.7, level2_time=3.7, level3_time=99, open_grace_time=0.35):
         self.alarm_time = alarm_time
         self.level2_time = level2_time
         self.level3_time = level3_time
