@@ -46,9 +46,9 @@ while True:
 
     status, alert_level = engine.update(face_detected, eyes_open)
 
-    if head_down:
-        status = "HEAD DOWN ALERT"
-        alert_level = "ALARM"
+    #if head_down:
+    #    status = "HEAD DOWN ALERT"
+    #   alert_level = "ALARM"
 
     if alert_level == "ALARM":
         alarm.on()
