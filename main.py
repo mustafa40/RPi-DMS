@@ -9,6 +9,7 @@ from alarm_buzzer import AlarmBuzzer
 from dashboard import Dashboard
 from blink_tracker import BlinkTracker
 from perclos_tracker import PerclosTracker
+from fatigue_score import FatigueScore
 
 
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
@@ -20,6 +21,7 @@ alarm = AlarmBuzzer(gpio_pin=18)
 dashboard = Dashboard(width=640, height=480)
 blink_tracker = BlinkTracker()
 perclos_tracker = PerclosTracker(window_seconds=20)
+fatigue_score_engine = FatigueScore()
 
 camera.open()
 
@@ -76,6 +78,7 @@ try:
 
         blink_count = blink_tracker.update(eyes_open)
         perclos = perclos_tracker.update(eyes_open)
+        fatigue_score = fatigue_score_engine.update(driver_state, perclos)
 
         status, alert_level = engine.update(driver_state)
 
@@ -91,6 +94,7 @@ try:
             fps=camera.get_fps(),
             blink_count=blink_count,
             perclos=perclos
+            fatigue_score=fatigue_score
         )
 
         cv2.imshow("RPi-DMS Professional", frame)
