@@ -39,7 +39,7 @@ class DriverStateAnalyzer:
             return self.UNKNOWN
 
         # Kısa süreli aşağı bakış: gösterge paneli
-        if y_shift > 0.06 and eyes_missing_time < 0.8:
+        if y_shift > 0.06 and eyes_missing_time < 2.0:
             return self.DASHBOARD
 
         # 1.5 saniyeden uzun göz görünmüyorsa artık uyku riski kabul et
