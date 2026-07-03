@@ -16,13 +16,13 @@ class AlarmBuzzer:
         now = time.time()
 
         if alert_level == "ALARM_1":
-            interval = 0.35   # bip bip
+            interval = 0.45
 
         elif alert_level == "ALARM_2":
-            interval = 0.15   # hızlı bip bip bip
+            interval = 0.16
 
         elif alert_level == "ALARM_3":
-            interval = 0.15   # sürekli değil, hızlı bip devam
+            interval = 0.10
 
         else:
             self.off()
