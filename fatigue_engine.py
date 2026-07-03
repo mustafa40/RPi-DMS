@@ -7,12 +7,8 @@ class FatigueEngine:
         self.level2_time = level2_time
         self.level3_time = level3_time
         self.open_grace_time = open_grace_time
-
         self.closed_start = None
         self.last_closed_time = None
-
-        self.status = "SYSTEM READY"
-        self.alert_level = "NORMAL"
 
     def update(self, face_detected, eyes_open):
         now = time.time()
@@ -20,9 +16,7 @@ class FatigueEngine:
         if not face_detected:
             self.closed_start = None
             self.last_closed_time = None
-            self.status = "NO FACE"
-            self.alert_level = "NO_FACE"
-            return self.status, self.alert_level
+            return "NO FACE", "NO_FACE"
 
         if not eyes_open:
             if self.closed_start is None:
@@ -32,43 +26,27 @@ class FatigueEngine:
             closed_time = now - self.closed_start
 
             if closed_time >= self.level3_time:
-                self.status = f"DROWSINESS ALERT L3: {closed_time:.1f}s"
-                self.alert_level = "ALARM_3"
+                return f"DROWSINESS ALERT L3: {closed_time:.1f}s", "ALARM_3"
             elif closed_time >= self.level2_time:
-                self.status = f"DROWSINESS ALERT L2: {closed_time:.1f}s"
-                self.alert_level = "ALARM_2"
+                return f"DROWSINESS ALERT L2: {closed_time:.1f}s", "ALARM_2"
             elif closed_time >= self.alarm_time:
-                self.status = f"DROWSINESS ALERT L1: {closed_time:.1f}s"
-                self.alert_level = "ALARM_1"
+                return f"DROWSINESS ALERT L1: {closed_time:.1f}s", "ALARM_1"
             else:
-                self.status = f"EYES CLOSED: {closed_time:.1f}s"
-                self.alert_level = "NORMAL"
-
-            return self.status, self.alert_level
+                return f"EYES CLOSED: {closed_time:.1f}s", "NORMAL"
 
         if self.closed_start is not None and self.last_closed_time is not None:
-            open_gap = now - self.last_closed_time
-
-            if open_gap < self.open_grace_time:
+            if now - self.last_closed_time < self.open_grace_time:
                 closed_time = now - self.closed_start
 
                 if closed_time >= self.level3_time:
-                    self.status = f"DROWSINESS ALERT L3: {closed_time:.1f}s"
-                    self.alert_level = "ALARM_3"
+                    return f"DROWSINESS ALERT L3: {closed_time:.1f}s", "ALARM_3"
                 elif closed_time >= self.level2_time:
-                    self.status = f"DROWSINESS ALERT L2: {closed_time:.1f}s"
-                    self.alert_level = "ALARM_2"
+                    return f"DROWSINESS ALERT L2: {closed_time:.1f}s", "ALARM_2"
                 elif closed_time >= self.alarm_time:
-                    self.status = f"DROWSINESS ALERT L1: {closed_time:.1f}s"
-                    self.alert_level = "ALARM_1"
+                    return f"DROWSINESS ALERT L1: {closed_time:.1f}s", "ALARM_1"
                 else:
-                    self.status = f"EYES CLOSED: {closed_time:.1f}s"
-                    self.alert_level = "NORMAL"
-
-                return self.status, self.alert_level
+                    return f"EYES CLOSED: {closed_time:.1f}s", "NORMAL"
 
         self.closed_start = None
         self.last_closed_time = None
-        self.status = "EYES OPEN"
-        self.alert_level = "NORMAL"
-        return self.status, self.alert_level
+        return "EYES OPEN", "NORMAL"
