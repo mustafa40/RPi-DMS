@@ -93,7 +93,7 @@ try:
             alert_level=alert_level,
             fps=camera.get_fps(),
             blink_count=blink_count,
-            perclos=perclos
+            perclos=perclos,
             fatigue_score=fatigue_score
         )
 
