@@ -16,13 +16,13 @@ class AlarmBuzzer:
         now = time.time()
 
         if alert_level == "ALARM_1":
-            interval = 0.45
+            interval = 0.40
 
         elif alert_level == "ALARM_2":
-            interval = 0.16
+            interval = 0.08
 
         elif alert_level == "ALARM_3":
-            interval = 0.10
+            interval = 0.05
 
         else:
             self.off()
