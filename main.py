@@ -70,10 +70,7 @@ try:
 
         status, alert_level = engine.update(face_detected, eyes_open)
 
-        if alert_level == "ALARM":
-            alarm.on()
-        else:
-            alarm.off()
+        alarm.update(alert_level)
 
         frame = dashboard.draw(
             frame=frame,
