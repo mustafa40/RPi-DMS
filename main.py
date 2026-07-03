@@ -7,15 +7,17 @@ from fatigue_engine import FatigueEngine
 from alarm_buzzer import AlarmBuzzer
 from dashboard import Dashboard
 from blink_tracker import BlinkTracker
+from perclos_tracker import PerclosTracker
 
 
 camera = CameraManager(camera_index=0, width=640, height=480, fps=15, flip=True)
 face_detector = FaceDetector(memory_time=1.2)
 eye_detector = EyeDetector()
-engine = FatigueEngine(alarm_time=1.7)
+engine = FatigueEngine(alarm_time=1.7, level2_time=3.7, level3_time=99.0)
 alarm = AlarmBuzzer(gpio_pin=18)
 dashboard = Dashboard(width=640, height=480)
 blink_tracker = BlinkTracker()
+perclos_tracker = PerclosTracker(window_seconds=20)
 
 camera.open()
 
@@ -61,12 +63,14 @@ try:
 
             for (ex, ey, ew, eh) in eyes:
                 cv2.rectangle(frame, (ex, ey), (ex + ew, ey + eh), (255, 0, 0), 2)
+
         else:
             last_eyes = []
             last_eyes_open = False
             eyes_open = False
 
         blink_count = blink_tracker.update(eyes_open)
+        perclos = perclos_tracker.update(eyes_open)
 
         status, alert_level = engine.update(face_detected, eyes_open)
 
@@ -77,7 +81,8 @@ try:
             status=status,
             alert_level=alert_level,
             fps=camera.get_fps(),
-            blink_count=blink_count
+            blink_count=blink_count,
+            perclos=perclos
         )
 
         cv2.imshow("RPi-DMS Professional", frame)
