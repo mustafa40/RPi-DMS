@@ -14,7 +14,7 @@ while True:
     if not ret:
         break
 
-    face = face_detector.detect(frame)
+    face, real_face = face_detector.detect(frame)
 
     if face is not None:
         x, y, w, h = face
