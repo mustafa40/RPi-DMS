@@ -14,20 +14,19 @@ class CameraManager:
         self.current_fps = 0
 
     def open(self):
-        self.cap = cv2.VideoCapture(self.camera_index)
+        self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_V4L2)
+
+        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
         self.cap.set(cv2.CAP_PROP_FPS, self.fps)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
         if not self.cap.isOpened():
             raise RuntimeError("Kamera acilamadi")
 
     def read(self):
-        if self.cap is None:
-            raise RuntimeError("Kamera once open() ile acilmali")
-
         ret, frame = self.cap.read()
-
         if not ret:
             return False, None
 
