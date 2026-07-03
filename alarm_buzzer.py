@@ -5,34 +5,49 @@ from gpiozero import Buzzer
 class AlarmBuzzer:
     def __init__(self, gpio_pin=18):
         self.buzzer = Buzzer(gpio_pin)
-        self.last_toggle = time.time()
-        self.beep_state = False
+        self.last_change = time.time()
+        self.beep_on = False
+        self.last_level = "NORMAL"
 
     def off(self):
         self.buzzer.off()
-        self.beep_state = False
+        self.beep_on = False
 
     def update(self, alert_level):
         now = time.time()
 
+        if alert_level != self.last_level:
+            self.last_level = alert_level
+            self.last_change = now
+            self.beep_on = False
+            self.buzzer.off()
+
         if alert_level == "ALARM_1":
-            interval = 0.45
+            on_time = 0.12
+            off_time = 0.80
+
         elif alert_level == "ALARM_2":
-            interval = 0.22
+            on_time = 0.12
+            off_time = 0.25
+
         elif alert_level == "ALARM_3":
-            interval = 0.10
+            self.buzzer.on()
+            return
+
         else:
             self.off()
             return
 
-        if now - self.last_toggle >= interval:
-            self.last_toggle = now
-            self.beep_state = not self.beep_state
-
-            if self.beep_state:
-                self.buzzer.on()
-            else:
+        if self.beep_on:
+            if now - self.last_change >= on_time:
                 self.buzzer.off()
+                self.beep_on = False
+                self.last_change = now
+        else:
+            if now - self.last_change >= off_time:
+                self.buzzer.on()
+                self.beep_on = True
+                self.last_change = now
 
     def cleanup(self):
         self.off()
