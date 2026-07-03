@@ -6,7 +6,7 @@ class Dashboard:
         self.width = width
         self.height = height
 
-    def draw(self, frame, status, alert_level, fps=0, blink_count=0, perclos=0):
+    def draw(self, frame, status, alert_level, fps=0, blink_count=0, perclos=0, fatigue_score=0):
         if alert_level in ["ALARM", "ALARM_1", "ALARM_2", "ALARM_3"]:
             theme = (0, 0, 255)
             status_text = "DROWSINESS ALERT"
@@ -42,6 +42,9 @@ class Dashboard:
 
         cv2.putText(frame, f"FPS: {fps:.1f}", (500, self.height - 17),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2)
+
+        cv2.putText(frame, f"FATIGUE: {fatigue_score}/100", (300, self.height - 42),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.52, (255, 255, 255), 2)
 
         if alert_level in ["ALARM", "ALARM_1", "ALARM_2", "ALARM_3"]:
             cv2.rectangle(frame, (90, 140), (550, 295), (0, 0, 255), -1)
