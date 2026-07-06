@@ -1,4 +1,6 @@
 import cv2
+import os
+import numpy as np
 import config
 
 from camera_manager import CameraManager
@@ -13,131 +15,167 @@ from perclos_tracker import PerclosTracker
 from fatigue_score import FatigueScore
 
 
-camera = CameraManager(
-    camera_index=0,
-    width=config.CAMERA_WIDTH,
-    height=config.CAMERA_HEIGHT,
-    fps=config.CAMERA_FPS,
-    flip=config.CAMERA_FLIP
-)
+def get_screen_size():
+    try:
+        import tkinter as tk
+        root = tk.Tk()
+        root.withdraw()
+        w = root.winfo_screenwidth()
+        h = root.winfo_screenheight()
+        root.destroy()
+        return w, h
+    except Exception:
+        return 800, 480
 
-face_detector = FaceDetector(memory_time=1.2)
-eye_detector = EyeDetector()
 
-driver_state_analyzer = DriverStateAnalyzer(
-    frame_height=config.DRIVER_STATE_FRAME_HEIGHT
-)
+def show_splash(window_name, screen_w, screen_h):
+    splash_path = os.path.join(os.path.dirname(__file__), config.SPLASH_IMAGE)
+    img = cv2.imread(splash_path)
 
-engine = FatigueEngine(
-    alarm_time=config.ALARM_TIME,
-    level2_time=config.ALARM_LEVEL2_TIME,
-    level3_time=config.ALARM_LEVEL3_TIME
-)
+    if img is None:
+        img = np.ones((screen_h, screen_w, 3), dtype=np.uint8) * 255
+        cv2.putText(img, "MARTUR FOMPAK INTERNATIONAL",
+                    (40, screen_h // 2 - 20),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0, (80, 80, 80), 2)
 
-alarm = AlarmBuzzer(gpio_pin=config.BUZZER_GPIO)
+        cv2.putText(img, "Connectivity & Smart Devices",
+                    (80, screen_h // 2 + 35),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8, (100, 100, 100), 2)
+    else:
+        img = cv2.resize(img, (screen_w, screen_h))
 
-dashboard = Dashboard(
-    width=config.CAMERA_WIDTH,
-    height=config.CAMERA_HEIGHT
-)
+    cv2.imshow(window_name, img)
+    cv2.waitKey(config.SPLASH_TIME_MS)
 
-blink_tracker = BlinkTracker()
 
-perclos_tracker = PerclosTracker(
-    window_seconds=config.PERCLOS_WINDOW_SECONDS
-)
+def main():
+    screen_w, screen_h = get_screen_size()
+    window_name = config.WINDOW_NAME
 
-fatigue_score_engine = FatigueScore()
+    cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty(
+        window_name,
+        cv2.WND_PROP_FULLSCREEN,
+        cv2.WINDOW_FULLSCREEN
+    )
 
-camera.open()
+    show_splash(window_name, screen_w, screen_h)
 
-frame_count = 0
-last_face = None
-last_real_face = False
-last_eyes = []
-last_eyes_open = False
+    camera = CameraManager(
+        camera_index=0,
+        width=config.CAMERA_WIDTH,
+        height=config.CAMERA_HEIGHT,
+        fps=config.CAMERA_FPS,
+        flip=config.CAMERA_FLIP
+    )
 
-try:
-    while True:
-        ret, frame = camera.read()
-        if not ret:
-            break
+    face_detector = FaceDetector(memory_time=1.2)
+    eye_detector = EyeDetector()
 
-        frame_count += 1
-        detect_this_frame = frame_count % 3 == 0
+    driver_state_analyzer = DriverStateAnalyzer(
+        frame_height=config.DRIVER_STATE_FRAME_HEIGHT
+    )
 
-        if detect_this_frame:
-            face, real_face = face_detector.detect(frame)
-            last_face = face
-            last_real_face = real_face
-        else:
-            face = last_face
-            real_face = last_real_face
+    engine = FatigueEngine(
+        alarm_time=config.ALARM_TIME,
+        level2_time=config.ALARM_LEVEL2_TIME,
+        level3_time=config.ALARM_LEVEL3_TIME
+    )
 
-        face_detected = face is not None
-        eyes_open = last_eyes_open
-        eyes = last_eyes
+    alarm = AlarmBuzzer(gpio_pin=config.BUZZER_GPIO)
+    dashboard = Dashboard()
+    blink_tracker = BlinkTracker()
+    perclos_tracker = PerclosTracker(window_seconds=config.PERCLOS_WINDOW_SECONDS)
+    fatigue_score_engine = FatigueScore()
 
-        if face_detected:
-            x, y, w, h = face
+    camera.open()
 
-            face_color = (0, 255, 0) if real_face else (0, 165, 255)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), face_color, 2)
+    frame_count = 0
+    last_face = None
+    last_real_face = False
+    last_eyes = []
+    last_eyes_open = False
+
+    try:
+        while True:
+            ret, frame = camera.read()
+            if not ret:
+                break
+
+            frame_count += 1
+            detect_this_frame = frame_count % 3 == 0
 
             if detect_this_frame:
-                eyes = eye_detector.detect(frame, face)
-                eyes_open = eye_detector.is_open(eyes)
+                face, real_face = face_detector.detect(frame)
+                last_face = face
+                last_real_face = real_face
+            else:
+                face = last_face
+                real_face = last_real_face
 
-                last_eyes = eyes
-                last_eyes_open = eyes_open
+            face_detected = face is not None
+            eyes_open = last_eyes_open
+            eyes = last_eyes
 
-            for (ex, ey, ew, eh) in eyes:
-                cv2.rectangle(frame, (ex, ey), (ex + ew, ey + eh), (255, 0, 0), 2)
-        else:
-            last_eyes = []
-            last_eyes_open = False
-            eyes_open = False
+            if face_detected:
+                x, y, w, h = face
 
-        driver_state = driver_state_analyzer.update(
-            face_detected=face_detected,
-            face=face,
-            eyes_open=eyes_open
-        )
+                face_color = (0, 255, 0) if real_face else (0, 165, 255)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), face_color, 2)
 
-        blink_count = blink_tracker.update(eyes_open)
-        perclos = perclos_tracker.update(eyes_open)
-        fatigue_score = fatigue_score_engine.update(driver_state, perclos)
+                if detect_this_frame:
+                    eyes = eye_detector.detect(frame, face)
+                    eyes_open = eye_detector.is_open(eyes)
 
-        status, alert_level = engine.update(driver_state)
+                    last_eyes = eyes
+                    last_eyes_open = eyes_open
 
-        alarm.update(alert_level)
+                for (ex, ey, ew, eh) in eyes:
+                    cv2.rectangle(frame, (ex, ey), (ex + ew, ey + eh), (255, 0, 0), 2)
+            else:
+                last_eyes = []
+                last_eyes_open = False
+                eyes_open = False
 
-        cv2.putText(
-            frame,
-            f"STATE: {driver_state}",
-            (20, 105),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.65,
-            (255, 255, 255),
-            2
-        )
+            driver_state = driver_state_analyzer.update(
+                face_detected=face_detected,
+                face=face,
+                eyes_open=eyes_open
+            )
 
-        frame = dashboard.draw(
-            frame=frame,
-            status=status,
-            alert_level=alert_level,
-            fps=camera.get_fps(),
-            blink_count=blink_count,
-            perclos=perclos,
-            fatigue_score=fatigue_score
-        )
+            blink_count = blink_tracker.update(eyes_open)
+            perclos = perclos_tracker.update(eyes_open)
+            fatigue_score = fatigue_score_engine.update(driver_state, perclos)
 
-        cv2.imshow("RPi-DMS Professional", frame)
+            status, alert_level = engine.update(driver_state)
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+            alarm.update(alert_level)
 
-finally:
-    alarm.cleanup()
-    camera.release()
-    cv2.destroyAllWindows()
+            frame = dashboard.draw(
+                frame=frame,
+                status=status,
+                alert_level=alert_level,
+                fps=camera.get_fps(),
+                blink_count=blink_count,
+                perclos=perclos,
+                fatigue_score=fatigue_score,
+                driver_state=driver_state
+            )
+
+            display = cv2.resize(frame, (screen_w, screen_h))
+            cv2.imshow(window_name, display)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("q") or key == 27:
+                break
+
+    finally:
+        alarm.cleanup()
+        camera.release()
+        cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
