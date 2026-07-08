@@ -23,18 +23,23 @@ def setup():
     w(0x05, 0x00)
     w(0x06, 0x00)
 
-    # FIFO avg=1, rollover on, almost full=15
+    # FIFO avg=1, rollover on
     w(0x08, 0x0F)
 
     # SPO2 config: ADC range 16384nA, 100Hz, 411us
     w(0x0A, 0x67)
 
-    # LED current max
-    w(0x0C, 0xFF)  # LED1
-    w(0x0D, 0xFF)  # LED2
+    # LED currents
+    w(0x0C, 0xFF)  # RED
+    w(0x0D, 0xFF)  # IR
 
-    # SpO2 mode
-    w(0x09, 0x03)
+    # Multi LED slot config
+    # slot1 = RED, slot2 = IR
+    w(0x11, 0x21)
+    w(0x12, 0x00)
+
+    # Multi LED mode
+    w(0x09, 0x07)
 
     time.sleep(0.5)
 
