@@ -27,12 +27,15 @@ class Dashboard:
         if alarm_active:
             theme = (0, 0, 255)
             driver_status = "TAKE A BREAK"
+
         elif alert_level == "NO_FACE":
             theme = (0, 220, 220)
             driver_status = "FACE LOST"
+
         elif fatigue_score >= 60:
             theme = (0, 140, 255)
             driver_status = "FATIGUE RISK"
+
         else:
             theme = (0, 180, 0)
             driver_status = "ATTENTIVE"
@@ -41,10 +44,14 @@ class Dashboard:
         bottom_h = int(145 * scale)
         bottom_y = max(top_h, h - bottom_h)
 
-        # -------------------------------------------------
-        # ÜST DURUM ÇUBUĞU
-        # -------------------------------------------------
-        cv2.rectangle(frame, (0, 0), (w, top_h), theme, -1)
+        # Üst durum çubuğu
+        cv2.rectangle(
+            frame,
+            (0, 0),
+            (w, top_h),
+            theme,
+            -1
+        )
 
         cv2.putText(
             frame,
@@ -69,19 +76,23 @@ class Dashboard:
         cv2.putText(
             frame,
             f"FPS {fps:.1f}",
-            (w - int(110 * scale), int(28 * scale)),
+            (
+                w - int(110 * scale),
+                int(28 * scale)
+            ),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.46 * scale,
             (0, 0, 0),
             max(1, int(1 * scale))
         )
 
-        # -------------------------------------------------
-        # SÜRÜCÜ DURUMU KUTUSU
-        # -------------------------------------------------
+        # Sürücü durumu kutusu
         state_x1 = int(10 * scale)
         state_y1 = top_h + int(8 * scale)
-        state_x2 = min(w - 10, int(290 * scale))
+        state_x2 = min(
+            w - 10,
+            int(290 * scale)
+        )
         state_y2 = state_y1 + int(40 * scale)
 
         cv2.rectangle(
@@ -105,33 +116,33 @@ class Dashboard:
             max(1, int(2 * scale))
         )
 
-        # -------------------------------------------------
-        # SÜRÜCÜ SAĞLIK PANELİ
-        # -------------------------------------------------
+        # Sağlık verisi varsayılanı
         if health_data is None:
             health_data = {
                 "heart_rate": None,
                 "spo2": None,
                 "status": "SENSOR OFFLINE",
-                "source": "SENSOR"
+                "finger_status": "NOT DETECTED",
+                "source": "NUCLEO"
             }
 
-        health_w = int(235 * scale)
-        health_h = int(120 * scale)
+        health_w = int(230 * scale)
+        health_h = int(145 * scale)
 
         health_x1 = max(
-            int(w * 0.56),
+            int(w * 0.55),
             w - health_w - int(12 * scale)
         )
 
         health_y1 = top_h + int(8 * scale)
         health_x2 = w - int(10 * scale)
+
         health_y2 = min(
             bottom_y - int(8 * scale),
             health_y1 + health_h
         )
 
-        if health_y2 > health_y1 + int(70 * scale):
+        if health_y2 > health_y1 + int(90 * scale):
             cv2.rectangle(
                 frame,
                 (health_x1, health_y1),
@@ -148,24 +159,9 @@ class Dashboard:
                 max(1, int(2 * scale))
             )
 
-            source = health_data.get("source", "SENSOR")
-            heart_rate = health_data.get("heart_rate")
-            spo2 = health_data.get("spo2")
-            health_status = health_data.get(
-                "status",
-                "UNKNOWN"
-            )
-
-            hr_text = (
-                "-- BPM"
-                if heart_rate is None
-                else f"{heart_rate} BPM"
-            )
-
-            spo2_text = (
-                "-- %"
-                if spo2 is None
-                else f"{spo2} %"
+            source = health_data.get(
+                "source",
+                "NUCLEO"
             )
 
             cv2.putText(
@@ -176,9 +172,39 @@ class Dashboard:
                     health_y1 + int(22 * scale)
                 ),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.38 * scale,
+                0.37 * scale,
                 (0, 220, 220),
                 max(1, int(1 * scale))
+            )
+
+            heart_rate = health_data.get(
+                "heart_rate"
+            )
+
+            spo2_value = health_data.get(
+                "spo2"
+            )
+
+            health_status = health_data.get(
+                "status",
+                "UNKNOWN"
+            )
+
+            finger_status = health_data.get(
+                "finger_status",
+                "NOT DETECTED"
+            )
+
+            hr_text = (
+                "-- BPM"
+                if heart_rate is None
+                else f"{heart_rate} BPM"
+            )
+
+            spo2_text = (
+                "-- %"
+                if spo2_value is None
+                else f"{spo2_value} %"
             )
 
             cv2.putText(
@@ -189,7 +215,7 @@ class Dashboard:
                     health_y1 + int(49 * scale)
                 ),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.45 * scale,
+                0.44 * scale,
                 (255, 255, 255),
                 max(1, int(1 * scale))
             )
@@ -202,23 +228,30 @@ class Dashboard:
                     health_y1 + int(73 * scale)
                 ),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.45 * scale,
+                0.44 * scale,
                 (255, 255, 255),
                 max(1, int(1 * scale))
             )
 
-            health_color = (
-                (0, 220, 0)
-                if health_status == "NORMAL"
-                else (0, 140, 255)
-            )
+            if health_status == "NORMAL":
+                health_color = (0, 220, 0)
+
+            elif health_status in [
+                "MEASURING",
+                "PLACE FINGER",
+                "NO DATA"
+            ]:
+                health_color = (0, 220, 220)
+
+            else:
+                health_color = (0, 140, 255)
 
             cv2.putText(
                 frame,
                 f"STATUS     : {health_status}",
                 (
                     health_x1 + int(9 * scale),
-                    health_y1 + int(98 * scale)
+                    health_y1 + int(97 * scale)
                 ),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.40 * scale,
@@ -226,9 +259,26 @@ class Dashboard:
                 max(1, int(1 * scale))
             )
 
-        # -------------------------------------------------
-        # ALT BİLGİ PANELİ
-        # -------------------------------------------------
+            finger_color = (
+                (0, 220, 0)
+                if finger_status == "DETECTED"
+                else (0, 140, 255)
+            )
+
+            cv2.putText(
+                frame,
+                f"FINGER     : {finger_status}",
+                (
+                    health_x1 + int(9 * scale),
+                    health_y1 + int(121 * scale)
+                ),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.40 * scale,
+                finger_color,
+                max(1, int(1 * scale))
+            )
+
+        # Alt bilgi paneli
         cv2.rectangle(
             frame,
             (0, bottom_y),
@@ -243,7 +293,10 @@ class Dashboard:
         cv2.putText(
             frame,
             f"STATUS  : {status}",
-            (left_x, bottom_y + int(27 * scale)),
+            (
+                left_x,
+                bottom_y + int(27 * scale)
+            ),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.48 * scale,
             (255, 255, 255),
@@ -253,7 +306,10 @@ class Dashboard:
         cv2.putText(
             frame,
             f"ALERT   : {alert_level}",
-            (left_x, bottom_y + int(53 * scale)),
+            (
+                left_x,
+                bottom_y + int(53 * scale)
+            ),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.48 * scale,
             theme,
@@ -263,7 +319,10 @@ class Dashboard:
         cv2.putText(
             frame,
             f"BLINK   : {blink_count}",
-            (left_x, bottom_y + int(79 * scale)),
+            (
+                left_x,
+                bottom_y + int(79 * scale)
+            ),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.48 * scale,
             (255, 255, 255),
@@ -273,7 +332,10 @@ class Dashboard:
         cv2.putText(
             frame,
             f"PERCLOS : {perclos:.1f}%",
-            (left_x, bottom_y + int(105 * scale)),
+            (
+                left_x,
+                bottom_y + int(105 * scale)
+            ),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.48 * scale,
             (255, 255, 255),
@@ -282,8 +344,12 @@ class Dashboard:
 
         cv2.putText(
             frame,
-            f"FATIGUE SCORE : {fatigue_score}/100",
-            (middle_x, bottom_y + int(35 * scale)),
+            f"FATIGUE SCORE : "
+            f"{fatigue_score}/100",
+            (
+                middle_x,
+                bottom_y + int(35 * scale)
+            ),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.49 * scale,
             theme,
@@ -324,19 +390,7 @@ class Dashboard:
             -1
         )
 
-        cv2.putText(
-            frame,
-            "Health data: UI simulation",
-            (middle_x, bottom_y + int(108 * scale)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.32 * scale,
-            (150, 150, 150),
-            max(1, int(1 * scale))
-        )
-
-        # -------------------------------------------------
-        # ALARM EKRANI
-        # -------------------------------------------------
+        # Alarm uyarısı
         if alarm_active:
             x1 = int(w * 0.12)
             y1 = int(h * 0.30)
