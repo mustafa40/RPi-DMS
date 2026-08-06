@@ -94,9 +94,10 @@ def main():
 
     fatigue_score_engine = FatigueScore()
 
-    # MAX30102 hazır olana kadar simülasyon modu
+    # Nucleo üzerinden gerçek MAX30102 verisi
     health_monitor = HealthMonitor(
-        simulation=True
+        baudrate=115200,
+        data_timeout=5.0
     )
 
     camera.open()
@@ -213,10 +214,8 @@ def main():
             # Buzzer alarm seviyesi
             alarm.update(alert_level)
 
-            # Sağlık verileri
-            health_data = (
-                health_monitor.update()
-            )
+            # Nucleo/MAX30102 gerçek sağlık verileri
+            health_data = health_monitor.update()
 
             # Dashboard
             frame = dashboard.draw(
@@ -249,6 +248,7 @@ def main():
                 break
 
     finally:
+        health_monitor.close()
         alarm.cleanup()
         camera.release()
         cv2.destroyAllWindows()
